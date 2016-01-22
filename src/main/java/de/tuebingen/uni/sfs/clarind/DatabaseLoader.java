@@ -19,13 +19,13 @@ public class DatabaseLoader implements CommandLineRunner {
 
     @Override
     public void run(String... strings) throws Exception {
-        this.repository.save(new Task("/chain.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain2.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain3.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain4.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain5.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain6.xml", "/karin.txt", "blablabla"));
-        this.repository.save(new Task("/chain7.xml", "/karin.txt", "blablabla"));
+        this.repository.save(new Task("/chain.xml", "/karin.txt", "blablabla", "running" ));
+        this.repository.save(new Task("/chain2.xml", "/karin.txt", "blablabla", "failed"));
+        this.repository.save(new Task("/chain3.xml", "/karin.txt", "blablabla", "succeeded"));
+        this.repository.save(new Task("/chain4.xml", "/karin.txt", "blablabla", "running"));
+        this.repository.save(new Task("/chain5.xml", "/karin.txt", "blablabla", "failed"));
+        this.repository.save(new Task("/chain6.xml", "/karin.txt", "blablabla", "failed"));
+        this.repository.save(new Task("/chain7.xml", "/karin.txt", "blablabla", "failed"));
     }
 
 }

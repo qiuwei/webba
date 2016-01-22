@@ -20,12 +20,14 @@ public class Task {
     private String chainFilePath;
     private String fileToProcessPath;
     private String description;
+    private String status;
 
     private Task() {};
 
-    public Task(String chainFilePath, String fileToProcessPath, String description) {
+    public Task(String chainFilePath, String fileToProcessPath, String description, String status) {
         this.chainFilePath = chainFilePath;
         this.fileToProcessPath = fileToProcessPath;
         this.description = description;
+        this.status = status;
     }
 }

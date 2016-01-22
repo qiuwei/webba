@@ -4,6 +4,7 @@
 const React = require('react');
 const client = require('./client');
 const Dropzone = require('react-dropzone');
+const Navbar = require('react-bootstrap').Navbar;
 // end::vars[]
 
 class App extends React.Component {
@@ -30,14 +31,23 @@ class App extends React.Component {
     render() {
         return (
             <div>
+                <Navbar>
+                    <Navbar.Header>
+                        <Navbar.Brand>
+                            <a href="#">Weblicht Batch Processing</a>
+                        </Navbar.Brand>
+                    </Navbar.Header>
+                    <NavItem eventKey={1} href="#">About</NavItem>
+                    <NavItem eventKey={2} href="#">Help</NavItem>
+                </Navbar>
                 <div>
                     <Dropzone onDrop={this.onDropChain}>
-                        <div>Try dropping a chain file here, or click to select a chain to upload.</div>
+                        <div>Drop a chain file here, or click to select a chain to upload.</div>
                     </Dropzone>
                 </div>
                 <div>
                     <Dropzone onDrop={this.onDropFile}>
-                        <div>Try dropping a file here, or click to select a file to upload.</div>
+                        <div>Drop a file here, or click to select a file to upload.</div>
                     </Dropzone>
                 </div>
 
