@@ -9,15 +9,18 @@ const Nav = require('react-bootstrap').Nav;
 const NavItem = require('react-bootstrap').NavItem;
 const Col = require('react-bootstrap').Col;
 const Row = require('react-bootstrap').Row;
+const Grid = require('react-bootstrap').Grid;
+const Table = require('react-bootstrap').Table;
+
 // end::vars[]
 const navbarInstance = (
-    <Navbar>
+    <Navbar inverse>
         <Navbar.Header>
             <Navbar.Brand>
                 <a href="#">Weblicht Batch Processing</a>
             </Navbar.Brand>
         </Navbar.Header>
-        <Nav>
+        <Nav pullRight>
             <NavItem eventKey={1} href="#">Help</NavItem>
             <NavItem eventKey={2} href="#">About</NavItem>
         </Nav>
@@ -49,24 +52,24 @@ class App extends React.Component {
         return (
             <div>
                 {navbarInstance}
-                <Row>
-                    <Col md={5} mdOffset={1}>
-                        <Dropzone onDrop={this.onDropChain}>
-                            <div>Drop a chain file here, or click to select a chain to upload.</div>
-                        </Dropzone>
-                    </Col>
-                    <Col md={5}>
-                        <Dropzone onDrop={this.onDropFile}>
-                            <div>Drop a file here, or click to select a file to upload.</div>
-                        </Dropzone>
-                    </Col>
-                </Row>
+                <Grid>
+                    <Row>
+                        <Col md={6}>
+                            <Dropzone onDrop={this.onDropChain}>
+                                <div>Drop a chain file here, or click to select a chain to upload.</div>
+                            </Dropzone>
+                        </Col>
+                        <Col md={6}>
+                            <Dropzone onDrop={this.onDropFile}>
+                                <div>Drop a file here, or click to select a file to upload.</div>
+                            </Dropzone>
+                        </Col>
+                    </Row>
 
-                <Row>
-                    <Col md={10} mdOffset={1}>
-                        <TaskList tasks={this.state.tasks}/>
-                    </Col>
-                </Row>
+                    <Row>
+                            <TaskList tasks={this.state.tasks}/>
+                    </Row>
+                </Grid>
             </div>
         )
     }
@@ -78,15 +81,17 @@ class TaskList extends React.Component{
                 <Task key={task._links.self.href} task ={task}/>
         );
         return (
-            <table>
+            <Table>
                 <tr>
                     <th>Chain</th>
                     <th>File</th>
                     <th>Description</th>
                     <th>Status</th>
                 </tr>
-                {tasks}
-            </table>
+                <tbody>
+                    {tasks}
+                </tbody>
+            </Table>
         )
     }
 }
