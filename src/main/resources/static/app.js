@@ -3,7 +3,7 @@
 // tag::vars[]
 const React = require('react');
 const client = require('./client');
-const Dropzone = require('react-dropzone');
+const Dropzone = require('react-dropzone-component');
 const Navbar = require('react-bootstrap').Navbar;
 const Nav = require('react-bootstrap').Nav;
 const NavItem = require('react-bootstrap').NavItem;
@@ -27,6 +27,68 @@ const navbarInstance = (
     </Navbar>
 );
 
+const dropzoneConfig = {
+    iconFiletypes: ['.xml'],
+    showFiletypeIcon: true,
+    // Notice how there's no postUrl set here
+    postUrl: '/upload'
+};
+
+const djsConfig = {
+    addRemoveLinks: true
+};
+
+var callbackArray = [
+    function () {
+        console.log('Look Ma, I\'m a callback in an array!');
+    },
+    function () {
+        console.log('Wooooow!');
+    }
+];
+
+/**
+ * Simple callbacks work too, of course.
+ */
+var simpleCallBack = function () {
+    console.log('I\'m a simple callback');
+};
+
+var eventHandlers = {
+    // All of these receive the event as first parameter:
+    drop: callbackArray,
+    dragstart: null,
+    dragend: null,
+    dragenter: null,
+    dragover: null,
+    dragleave: null,
+    // All of these receive the file as first parameter:
+    addedfile: simpleCallBack,
+    removedfile: null,
+    thumbnail: null,
+    error: null,
+    processing: null,
+    uploadprogress: null,
+    sending: null,
+    success: null,
+    complete: null,
+    canceled: null,
+    maxfilesreached: null,
+    maxfilesexceeded: null,
+    // All of these receive a list of files as first parameter
+    // and are only called if the uploadMultiple option
+    // in djsConfig is true:
+    processingmultiple: null,
+    sendingmultiple: null,
+    successmultiple: null,
+    completemultiple: null,
+    canceledmultiple: null,
+    // Special Events
+    totaluploadprogress: null,
+    reset: null,
+    queuecompleted: null
+};
+
 class App extends React.Component {
 
     constructor(props) {
@@ -49,23 +111,22 @@ class App extends React.Component {
     }
 
     render() {
+
         return (
             <div>
                 {navbarInstance}
                 <Grid>
                     <Row>
                         <Col md={6}>
-                            <Dropzone onDrop={this.onDropChain}>
-                                <div>Drop a chain file here, or click to select a chain to upload.</div>
+                            <Dropzone config={dropzoneConfig} eventHandlers={eventHandlers} djsConfig={djsConfig}>
                             </Dropzone>
                         </Col>
                         <Col md={6}>
-                            <Dropzone onDrop={this.onDropFile}>
-                                <div>Drop a file here, or click to select a file to upload.</div>
+                            <Dropzone config={dropzoneConfig} eventHandlers={eventHandlers} djsConfig={djsConfig}>
                             </Dropzone>
                         </Col>
                     </Row>
-
+                    <br/>
                     <Row>
                             <TaskList tasks={this.state.tasks}/>
                     </Row>
