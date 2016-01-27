@@ -2,8 +2,9 @@
 
 // tag::vars[]
 const React = require('react');
+const ReactDOM = require('react-dom');
 const client = require('./client');
-const Dropzone = require('react-dropzone-component');
+const follow = require('./follow');
 const Navbar = require('react-bootstrap').Navbar;
 const Nav = require('react-bootstrap').Nav;
 const NavItem = require('react-bootstrap').NavItem;
@@ -11,6 +12,10 @@ const Col = require('react-bootstrap').Col;
 const Row = require('react-bootstrap').Row;
 const Grid = require('react-bootstrap').Grid;
 const Table = require('react-bootstrap').Table;
+const cmdiDropZone = require('./dropzone').cmdiDropZone;
+const fileDropZone = require('./dropzone').fileDropZone;
+
+const root = '/api';
 
 // end::vars[]
 const navbarInstance = (
@@ -27,87 +32,85 @@ const navbarInstance = (
     </Navbar>
 );
 
-const dropzoneConfig = {
-    iconFiletypes: ['.xml'],
-    showFiletypeIcon: true,
-    // Notice how there's no postUrl set here
-    postUrl: '/upload'
-};
-
-const djsConfig = {
-    addRemoveLinks: true
-};
-
-var callbackArray = [
-    function () {
-        console.log('Look Ma, I\'m a callback in an array!');
-    },
-    function () {
-        console.log('Wooooow!');
-    }
-];
-
-/**
- * Simple callbacks work too, of course.
- */
-var simpleCallBack = function () {
-    console.log('I\'m a simple callback');
-};
-
-var eventHandlers = {
-    // All of these receive the event as first parameter:
-    drop: callbackArray,
-    dragstart: null,
-    dragend: null,
-    dragenter: null,
-    dragover: null,
-    dragleave: null,
-    // All of these receive the file as first parameter:
-    addedfile: simpleCallBack,
-    removedfile: null,
-    thumbnail: null,
-    error: null,
-    processing: null,
-    uploadprogress: null,
-    sending: null,
-    success: null,
-    complete: null,
-    canceled: null,
-    maxfilesreached: null,
-    maxfilesexceeded: null,
-    // All of these receive a list of files as first parameter
-    // and are only called if the uploadMultiple option
-    // in djsConfig is true:
-    processingmultiple: null,
-    sendingmultiple: null,
-    successmultiple: null,
-    completemultiple: null,
-    canceledmultiple: null,
-    // Special Events
-    totaluploadprogress: null,
-    reset: null,
-    queuecompleted: null
-};
 
 class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {tasks: []};
+        this.state = {
+            tasks: [],
+            attributes: [],
+            pageSize: 2,
+            links: {}
+        };
+    }
+
+    loadFromServer(pageSize) {
+        follow(client, root, [{rel: 'tasks', params: {size: pageSize}}]).then(
+                taskCollection => {
+                return client({
+                    method: 'GET',
+                    path: taskCollection.entity._links.profile.href,
+                    headers: {'Accept': 'application/schema+json'}
+                }).then(schema => {
+                        this.schema = schema.entity;
+                        return taskCollection;
+                    }
+                );
+            }
+        ).done(taskCollection => {
+                this.setState({
+                    tasks: taskCollection.entity._embedded.tasks,
+                    attributes: Object.keys(this.schema.properties),
+                    pageSize: pageSize,
+                    links: taskCollection.entity._links
+                });
+            });
     }
 
     componentDidMount() {
-        client({method: 'GET', path: '/api/tasks'}).done(response => {
-            this.setState({tasks: response.entity._embedded.tasks});
-        });
+        this.loadFromServer(this.state.pageSize);
     }
 
-    onDropChain (chain) {
+    onDropChain(chain) {
         console.log("Recieved chain: ", chain);
     }
 
-    onDropFile (files) {
+    onDropFile(files) {
         console.log("Received files: ", files);
+    }
+
+    onCreate(newTask) {
+        follow(client, root, ['tasks']).then(taskCollection => {
+            return client({
+                method: 'POST',
+                path: taskCollection.entity._links.self.href,
+                entity: newTask,
+                headers: {'Content-Type': 'application/json'}
+            })
+        }).then(response => {
+            return follow(client, root, [
+                {rel: 'tasks', params: {'size': this.state.pageSize}}]);
+        }).done(response => {
+            this.onNavigate(response.entity._links.last.href);
+        });
+    }
+
+    onDelete(task) {
+        client({method: 'DELETE', path: task._links.self.href}).done(response => {
+            this.loadFromServer(this.state.pageSize);
+        });
+    }
+
+    onNavigate(navUri) {
+        client({method: 'GET', path: navUri}).done(taskCollection => {
+            this.setState({
+                tasks: taskCollection.entity._embedded.tasks,
+                attributes: this.state.attributes,
+                pageSize: this.state.pageSize,
+                links: taskCollection.entity._links
+            });
+        });
     }
 
     render() {
@@ -118,17 +121,16 @@ class App extends React.Component {
                 <Grid>
                     <Row>
                         <Col md={6}>
-                            <Dropzone config={dropzoneConfig} eventHandlers={eventHandlers} djsConfig={djsConfig}>
-                            </Dropzone>
+                            {cmdiDropZone}
                         </Col>
                         <Col md={6}>
-                            <Dropzone config={dropzoneConfig} eventHandlers={eventHandlers} djsConfig={djsConfig}>
-                            </Dropzone>
+                            {fileDropZone}
                         </Col>
                     </Row>
                     <br/>
                     <Row>
-                            <TaskList tasks={this.state.tasks}/>
+                        <CreateDialog attribute={this.state.attributes} onCreate={this.onCreate}/>
+                        <TaskList tasks={this.state.tasks}/>
                     </Row>
                 </Grid>
             </div>
@@ -136,10 +138,60 @@ class App extends React.Component {
     }
 }
 
-class TaskList extends React.Component{
+
+class CreateDialog extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        var newTask = {};
+        this.props.attributes.forEach(attribute => {
+            newTask[attribute] = React.findDOMNode(this.refs[attribute]).value.trim;
+        });
+        this.props.onCreate(newTask);
+
+        this.props.attributes.forEach(attribute => {
+            React.findDOMNode(this.refs[attribute].value = '');
+        });
+
+        window.location = "#";
+    }
+
+    render() {
+        var inputs = this.props.attributes.map(attribute =>
+                <p key={attribute}>
+                    <input type="text" placeholder={attribute} ref={attribute} className="field"/>
+                </p>
+        );
+
+        return (
+            <div>
+                <a href="#createTask">Create</a>
+
+                <div id="createTask" className="modalDialog">
+                    <div>
+                        <a href="#" title="Close" className="close">X</a>
+
+                        <h2>Create new task</h2>
+
+                        <form>
+                            {inputs}
+                            <button onClick={this.handleSubmit()}>Create</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+class TaskList extends React.Component {
     render() {
         var tasks = this.props.tasks.map(task =>
-                <Task key={task._links.self.href} task ={task}/>
+                <Task key={task._links.self.href} task={task}/>
         );
         return (
             <Table>
@@ -150,13 +202,13 @@ class TaskList extends React.Component{
                     <th>Status</th>
                 </tr>
                 <tbody>
-                    {tasks}
+                {tasks}
                 </tbody>
             </Table>
         )
     }
 }
-class Task extends React.Component{
+class Task extends React.Component {
     render() {
         return (
             <tr>
@@ -168,7 +220,7 @@ class Task extends React.Component{
         )
     }
 }
-React.render(
+ReactDOM.render(
     <App />,
     document.getElementById('react')
 )
