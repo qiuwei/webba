@@ -12,6 +12,7 @@ const Col = require('react-bootstrap').Col;
 const Row = require('react-bootstrap').Row;
 const Grid = require('react-bootstrap').Grid;
 const Table = require('react-bootstrap').Table;
+const Button = require('react-bootstrap').Button;
 const cmdiDropZone = require('./dropzone').cmdiDropZone;
 const fileDropZone = require('./dropzone').fileDropZone;
 
@@ -30,8 +31,8 @@ const navbarInstance = (
             <NavItem eventKey={2} href="#">About</NavItem>
         </Nav>
     </Navbar>
-);
 
+);
 
 class App extends React.Component {
 
@@ -43,6 +44,10 @@ class App extends React.Component {
             pageSize: 2,
             links: {}
         };
+        this.updatePageSize = this.updatePageSize.bind(this);
+        this.onCreate = this.onCreate.bind(this);
+        this.onDelete = this.onDelete.bind(this);
+        this.onNavigate = this.onNavigate.bind(this);
     }
 
     loadFromServer(pageSize) {
@@ -87,7 +92,7 @@ class App extends React.Component {
                 path: taskCollection.entity._links.self.href,
                 entity: newTask,
                 headers: {'Content-Type': 'application/json'}
-            })
+            });
         }).then(response => {
             return follow(client, root, [
                 {rel: 'tasks', params: {'size': this.state.pageSize}}]);
@@ -113,6 +118,12 @@ class App extends React.Component {
         });
     }
 
+    updatePageSize(pageSize) {
+        if (pageSize !== this.state.pageSize) {
+            this.loadFromServer(pageSize);
+        }
+    }
+
     render() {
 
         return (
@@ -129,12 +140,17 @@ class App extends React.Component {
                     </Row>
                     <br/>
                     <Row>
-                        <CreateDialog attribute={this.state.attributes} onCreate={this.onCreate}/>
-                        <TaskList tasks={this.state.tasks}/>
+                        <CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
+                        <TaskList tasks={this.state.tasks}
+                                  links={this.state.links}
+                                  pageSize={this.state.pageSize}
+                                  onNavigate={this.onNavigate}
+                                  onDelete={this.onDelete}
+                                  updatePageSize={this.updatePageSize} />
                     </Row>
                 </Grid>
             </div>
-        )
+        );
     }
 }
 
@@ -149,7 +165,7 @@ class CreateDialog extends React.Component {
         e.preventDefault();
         var newTask = {};
         this.props.attributes.forEach(attribute => {
-            newTask[attribute] = React.findDOMNode(this.refs[attribute]).value.trim;
+            newTask[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
         });
         this.props.onCreate(newTask);
 
@@ -161,6 +177,7 @@ class CreateDialog extends React.Component {
     }
 
     render() {
+        console.log(this.props.attributes);
         var inputs = this.props.attributes.map(attribute =>
                 <p key={attribute}>
                     <input type="text" placeholder={attribute} ref={attribute} className="field"/>
@@ -179,36 +196,108 @@ class CreateDialog extends React.Component {
 
                         <form>
                             {inputs}
-                            <button onClick={this.handleSubmit()}>Create</button>
+                            <button onClick={this.handleSubmit}>Create</button>
                         </form>
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 }
 
 class TaskList extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleNavFirst = this.handleNavFirst.bind(this);
+        this.handleNavPrev = this.handleNavPrev.bind(this);
+        this.handleNavNext = this.handleNavNext.bind(this);
+        this.handleNavLast = this.handleNavLast.bind(this);
+        this.handleInput = this.handleInput.bind(this);
+    }
+
+    handleInput(e) {
+        e.preventDefault();
+        var pageSize = ReactDOM.findDOMNode(this.refs.pageSize).value;
+        if(/^[0-9]+$/.test(pageSize)){
+            this.props.updatePageSize(pageSize);
+        } else {
+            ReactDOM.findDOMNode(this.refs.pageSize).value =
+                pageSize.substring(0, pageSize.length - 1);
+        }
+    }
+
+    handleNavFirst(e) {
+        e.preventDefault();
+        this.props.onNavigate(this.props.links.first.href);
+    }
+
+    handleNavPrev(e) {
+        e.preventDefault();
+        this.props.onNavigate(this.props.links.prev.href);
+    }
+
+    handleNavNext(e) {
+        e.preventDefault();
+        this.props.onNavigate(this.props.links.next.href);
+    }
+
+    handleNavLast(e) {
+        e.preventDefault();
+        this.props.onNavigate(this.props.links.last.href);
+    }
+
     render() {
         var tasks = this.props.tasks.map(task =>
-                <Task key={task._links.self.href} task={task}/>
+                <Task key={task._links.self.href} task={task} onDelete={this.props.onDelete}/>
         );
+
+        var navLinks = [];
+
+        if ("first" in this.props.links) {
+            navLinks.push(<button key="first" onClick={this.handleNavFirst}> &lt;&lt;</button>);
+        }
+
+        if ("prev" in this.props.links) {
+            navLinks.push(<button key="prev" onClick={this.handleNavPrev}> &lt;</button>);
+        }
+        if ("next" in this.props.links) {
+            navLinks.push(<button key="next" onClick={this.handleNavNext}> &gt;</button>);
+        }
+        if ("last" in this.props.links) {
+            navLinks.push(<button key="last" onClick={this.handleNavLast}> &gt;&gt;</button>);
+        }
         return (
-            <Table>
-                <tr>
-                    <th>Chain</th>
-                    <th>File</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                </tr>
-                <tbody>
-                {tasks}
-                </tbody>
-            </Table>
-        )
+            <div>
+                <input ref="pageSize" defaultValue={this.props.pageSize} onInput={this.handleInput}/>
+                <Table>
+                    <tr>
+                        <th>Chain</th>
+                        <th>File</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                    <tbody>
+                    {tasks}
+                    </tbody>
+                </Table>
+                <div>
+                    {navLinks}
+                </div>
+            </div>
+        );
     }
 }
 class Task extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+
+    handleDelete(){
+        this.props.onDelete(this.props.task);
+    }
+
     render() {
         return (
             <tr>
@@ -216,11 +305,12 @@ class Task extends React.Component {
                 <td>{this.props.task.fileToProcessPath}</td>
                 <td>{this.props.task.description}</td>
                 <td>{this.props.task.status}</td>
+                <td><Button onClick={this.handleDelete}>stop</Button></td>
             </tr>
-        )
+        );
     }
 }
 ReactDOM.render(
     <App />,
     document.getElementById('react')
-)
+);
