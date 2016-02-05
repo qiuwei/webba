@@ -20,11 +20,14 @@ public class WebbaFile {
     @Id
     private ObjectId objectId;
 
-    private @ManyToOne WebbaUser webbaUser;
+    private
+    @ManyToOne
+    WebbaUser webbaUser;
 
-    private WebbaFile(){}
+    private WebbaFile() {
+    }
 
-    public WebbaFile(ObjectId objectId, WebbaUser webbaUser){
+    public WebbaFile(ObjectId objectId, WebbaUser webbaUser) {
         this.webbaUser = webbaUser;
     }
 

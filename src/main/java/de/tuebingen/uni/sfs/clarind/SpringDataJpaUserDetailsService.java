@@ -21,6 +21,7 @@ public class SpringDataJpaUserDetailsService implements UserDetailsService {
 
     public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
         WebbaUser webbaUser = this.repository.findByName(name);
-        return new org.springframework.security.core.userdetails.User(webbaUser.getName(), webbaUser.getPassword(), AuthorityUtils.createAuthorityList(webbaUser.getRoles()));
+        return new org.springframework.security.core.userdetails.User(webbaUser.getName(), webbaUser.getPassword(),
+                AuthorityUtils.createAuthorityList(webbaUser.getRoles()));
     }
 }

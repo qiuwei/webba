@@ -16,7 +16,7 @@ public class DatabaseLoader implements CommandLineRunner {
     private final WebbaUserRepository users;
 
     @Autowired
-    public DatabaseLoader( TaskRepository tasks, WebbaUserRepository users ) {
+    public DatabaseLoader(TaskRepository tasks, WebbaUserRepository users) {
         this.tasks = tasks;
         this.users = users;
     }

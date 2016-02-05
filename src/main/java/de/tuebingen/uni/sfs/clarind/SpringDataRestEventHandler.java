@@ -23,7 +23,7 @@ public class SpringDataRestEventHandler {
     public void applyUserInfomationUsingSecurityContext(Task task) {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         WebbaUser user = this.webbaUserRepository.findByName(name);
-        if(user == null) {
+        if (user == null) {
             WebbaUser newWebbaUser = new WebbaUser();
             newWebbaUser.setName(name);
             newWebbaUser.setRoles(new String[]{"ROLE_USER"});

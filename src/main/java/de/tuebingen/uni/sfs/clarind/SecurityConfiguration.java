@@ -17,7 +17,7 @@ import org.springframework.security.data.repository.query.SecurityEvaluationCont
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private SpringDataJpaUserDetailsService userDetailsService;
 

@@ -15,7 +15,7 @@ import java.io.InputStream;
  * @author Wei Qiu <wei@qiu.es>
  */
 @Component
-public class StorageServiceGridFSImpl implements StorageService{
+public class StorageServiceGridFSImpl implements StorageService {
     private final GridFS gridFS;
     private final MongoDbFactory mongoDbFactory;
 

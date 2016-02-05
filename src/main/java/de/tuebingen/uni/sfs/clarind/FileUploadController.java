@@ -1,10 +1,8 @@
 package de.tuebingen.uni.sfs.clarind;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.mongodb.gridfs.GridFSDBFile;
 import de.tuebingen.uni.sfs.clarind.storage.StorageService;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,9 +13,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -37,12 +32,12 @@ public class FileUploadController {
     }
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
-    public void getById(@PathVariable(value="id") String id, HttpServletResponse response) throws IOException {
+    public void getById(@PathVariable(value = "id") String id, HttpServletResponse response) throws IOException {
         GridFSDBFile file = storageService.get(id);
-        if(file!=null) {
+        if (file != null) {
             byte[] data = ByteStreams.toByteArray(file.getInputStream());
             response.setContentType(file.getContentType());
-            response.setContentLength((int)file.getLength());
+            response.setContentLength((int) file.getLength());
             response.getOutputStream().write(data);
             response.getOutputStream().flush();
         } else {
@@ -54,7 +49,8 @@ public class FileUploadController {
     @RequestMapping(value = "/store", method = RequestMethod.POST)
     public ResponseEntity<String> store(@RequestParam MultipartFile file, WebRequest webRequest) {
         try {
-            String storeId = storageService.save(file.getInputStream(), file.getContentType(), file.getOriginalFilename());
+            String storeId = storageService.save(file.getInputStream(), file.getContentType(), file
+                    .getOriginalFilename());
             String storedURL = "/storage/id/" + storeId;
             HttpHeaders responseHeaders = new HttpHeaders();
             return new ResponseEntity<String>(storedURL, responseHeaders, HttpStatus.OK);

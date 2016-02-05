@@ -20,9 +20,14 @@ import javax.persistence.Id;
 @Entity
 public class WebbaUser {
     public static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
-    private @Id @GeneratedValue Long id;
+    private
+    @Id
+    @GeneratedValue
+    Long id;
     private String name;
-    private @JsonIgnore String password;
+    private
+    @JsonIgnore
+    String password;
 
     private String[] roles;
 
