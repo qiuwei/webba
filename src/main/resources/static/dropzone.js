@@ -23,7 +23,7 @@ const fileDropzoneConfig = {
 
 const cmdiDjsConfig = {
     addRemoveLinks: true,
-    dictDefaultMessage: "Drop CMDI file here to upload!"
+    dictDefaultMessage: "Drop the chain file here to upload!"
 };
 
 const fileDjsConfig = {

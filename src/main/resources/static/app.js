@@ -30,6 +30,7 @@ const navbarInstance = (
         <Nav pullRight>
             <NavItem eventKey={1} href="#">Help</NavItem>
             <NavItem eventKey={2} href="#">About</NavItem>
+            <NavItem eventKey={3} href="/logout">Logout</NavItem>
         </Nav>
     </Navbar>
 

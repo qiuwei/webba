@@ -48,6 +48,10 @@ public class DatabaseLoader implements CommandLineRunner {
         this.tasks.save(new Task("/chain5.xml", "/exampleFood.txt", "blablabla", "failed", alex));
         this.tasks.save(new Task("/chain6.xml", "/exampleFood.txt", "blablabla", "failed", alex));
         this.tasks.save(new Task("/chain7.xml", "/exampleFood.txt", "blablabla", "failed", alex));
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("Marie", "Hinrichs",
+                        AuthorityUtils.createAuthorityList("ROLE_ADMIN")));
     }
 
 }
