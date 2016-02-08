@@ -1,21 +1,27 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head lang="en">
     <meta charset="UTF-8"/>
     <title>Weblicht Batch Processing</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="/main.css" />
+    <link rel="stylesheet" href="/main.css"/>
 </head>
 <body>
 
 <div id="react"></div>
 
 <script src="built/bundle.js"></script>
+<form method="POST" enctype="multipart/form-data"
+      action="/storage/store">
+    File to upload: <input type="file" name="file" /><br />
+    Name: <input type="text" name="name"/><br /> <br />
+    <input type="submit" value="Upload"/> Press here to upload the file!
+</form>
 
 </body>
 </html>
