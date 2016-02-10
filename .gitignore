@@ -14,3 +14,13 @@
 hs_err_pid*
 
 *.log
+
+.idea/
+
+node/
+
+*node_modules*
+
+target/
+
+*.iml

@@ -1,21 +1,14 @@
 'use strict';
 
 // tag::vars[]
-const React = require('react');
-const ReactDOM = require('react-dom');
-const client = require('./client');
-const follow = require('./follow');
-const when = require('when');
-const Navbar = require('react-bootstrap').Navbar;
-const Nav = require('react-bootstrap').Nav;
-const NavItem = require('react-bootstrap').NavItem;
-const Col = require('react-bootstrap').Col;
-const Row = require('react-bootstrap').Row;
-const Grid = require('react-bootstrap').Grid;
-const Table = require('react-bootstrap').Table;
-const Button = require('react-bootstrap').Button;
-const cmdiDropZone = require('./dropzone').cmdiDropZone;
-const fileDropZone = require('./dropzone').fileDropZone;
+import {Navbar, Nav, NavItem, Col, Row, Grid, Table, Button} from 'react-bootstrap';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import client from './client';
+import follow from './follow';
+import when from 'when';
+import {cmdiDropZone, fileDropZone} from './components/dropzone';
+require('./assets/main.css');
 
 const root = '/api';
 

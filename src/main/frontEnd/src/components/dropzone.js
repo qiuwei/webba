@@ -1,8 +1,8 @@
 /**
  * Created by wqiu on 27/01/16.
  */
-const React = require('react');
-const Dropzone = require('react-dropzone-component');
+import React from 'react';
+import Dropzone from 'react-dropzone-component';
 require('react-dropzone-component/styles/filepicker.css');
 require('react-dropzone-component/node_modules/dropzone/dist/min/dropzone.min.css');
 
@@ -81,20 +81,15 @@ var eventHandlers = {
     queuecompleted: null
 };
 
-const cmdiDropZone= (
+export const cmdiDropZone= (
     <Dropzone config={cmdiDropzoneConfig} eventHandlers={eventHandlers}
               djsConfig={cmdiDjsConfig}>
     </Dropzone>
 );
 
-const fileDropZone = (
+export const fileDropZone = (
     <Dropzone config={fileDropzoneConfig} eventHandlers={eventHandlers}
               djsConfig={fileDjsConfig}>
     </Dropzone>
 );
-
-module.exports = {
-    cmdiDropZone,
-    fileDropZone
-};
 

@@ -3,7 +3,7 @@
  * Created by wqiu on 27/01/16.
  */
 
-module.exports = function follow(api, rootPath, relArray) {
+export default function follow(api, rootPath, relArray) {
     var root = api({
         method: 'GET',
         path: rootPath
@@ -36,9 +36,9 @@ module.exports = function follow(api, rootPath, relArray) {
                     path: response.entity._links[rel],
                     path: response.entity._links[rel].href,
                     params: arrayItem.params
-                })
+                });
             }
-        })
+        });
     }
 
     function hasEmbeddedRel(entity, rel) {
