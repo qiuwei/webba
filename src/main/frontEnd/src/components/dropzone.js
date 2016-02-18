@@ -7,7 +7,7 @@ require('react-dropzone-component/styles/filepicker.css');
 require('react-dropzone-component/node_modules/dropzone/dist/min/dropzone.min.css');
 
 
-const cmdiDropzoneConfig = {
+const chainDropzoneConfig = {
     iconFiletypes: ['.xml'],
     showFiletypeIcon: true,
     // Notice how there's no postUrl set here
@@ -81,8 +81,8 @@ var eventHandlers = {
     queuecompleted: null
 };
 
-export const cmdiDropZone= (
-    <Dropzone config={cmdiDropzoneConfig} eventHandlers={eventHandlers}
+export const chainDropZone= (
+    <Dropzone config={chainDropzoneConfig} eventHandlers={eventHandlers}
               djsConfig={cmdiDjsConfig}>
     </Dropzone>
 );

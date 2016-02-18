@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import client from './client';
 import follow from './follow';
 import when from 'when';
-import {cmdiDropZone, fileDropZone} from './components/dropzone';
+import {chainDropZone, fileDropZone} from './components/dropzone';
 require('./assets/main.css');
 
 const root = '/api';
@@ -26,7 +26,6 @@ const navbarInstance = (
             <NavItem eventKey={3} href="/logout">Logout</NavItem>
         </Nav>
     </Navbar>
-
 );
 
 class App extends React.Component {
@@ -153,7 +152,7 @@ class App extends React.Component {
                 <Grid>
                     <Row>
                         <Col md={6}>
-                            {cmdiDropZone}
+                            {chainDropZone}
                         </Col>
                         <Col md={6}>
                             {fileDropZone}
