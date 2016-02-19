@@ -70,7 +70,7 @@ class App extends React.Component {
             log("Feteched tasks:", tasks);
             this.setState({
                 tasks: tasks,
-                attributes: Object.keys(this.schema.properties),
+                attributes: Object.keys(this.schema.properties).filter(attribute => attribute !== "webbaUser"),
                 pageSize: pageSize,
                 links: this.links
             });
@@ -97,16 +97,25 @@ class App extends React.Component {
     }
 
     onCreate(newTask) {
-        follow(client, root, ['tasks']).then(taskCollection => {
-            return client.post(taskCollection.data._links.self.href, {
-                data: newTask,
+        follow(client, root, ['tasks']).then(response => {
+            return client.post(response.data._links.self.href, newTask, {
                 headers: {'Content-Type': 'application/json'}
-            });
+            })
         }).then(response => {
             return follow(client, root, [
                 {rel: 'tasks', params: {'size': this.state.pageSize}}]);
         }).then(response => {
+            log("Create task");
+            log("response.data", response.data);
+            log("response.config", response.config);
             this.onNavigate(response.data._links.last.href);
+        }).catch(response => {
+            if (response instanceof Error) {
+                log("Error creating task", response.message);
+            } else {
+                log("response.data", response.data);
+                log("response.config", response.config);
+            }
         });
     }
 
@@ -198,7 +207,7 @@ class CreateDialog extends React.Component {
     }
 
     render() {
-        console.log(this.props.attributes);
+        log(this.props.attributes);
         var inputs = this.props.attributes.map(attribute =>
             <p key={attribute}>
                 <input type="text" placeholder={attribute} ref={attribute} className="field"/>
