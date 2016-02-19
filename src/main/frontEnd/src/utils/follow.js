@@ -10,6 +10,7 @@ const log = bows('utils/follow');
 
 export default function follow(api, rootPath, relArray) {
     const root = api.get(rootPath);
+    log("relArray is: ", relArray);
 
     return relArray.reduce(function (root, arrayItem) {
         var rel = typeof arrayItem === 'string' ? arrayItem : arrayItem.rel;
@@ -30,7 +31,7 @@ export default function follow(api, rootPath, relArray) {
             if (typeof arrayItem === 'string') {
                 return api.get(response.data._links[rel].href);
             } else {
-                return api.get(response.data._links[rel].href, arrayItem.params);
+                return api.get(response.data._links[rel].href, {params: arrayItem.params});
             }
         });
     }
