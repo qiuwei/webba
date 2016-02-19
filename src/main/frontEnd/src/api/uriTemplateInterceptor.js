@@ -14,5 +14,4 @@ define(function(require) {
 			}
 		}
 	});
-
 });

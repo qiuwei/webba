@@ -4,13 +4,16 @@
 import {Navbar, Nav, NavItem, Col, Row, Grid, Table, Button} from 'react-bootstrap';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import client from './client';
-import follow from './follow';
+import client from './utils/client';
+import follow from './utils/follow';
 import when from 'when';
+import bows from 'bows';
 import {chainDropZone, fileDropZone} from './components/dropzone';
+import axios from 'axios';
 require('./assets/main.css');
 
 const root = '/api';
+let log = bows('app');
 
 // end::vars[]
 const navbarInstance = (
@@ -47,29 +50,24 @@ class App extends React.Component {
 
     loadFromServer(pageSize) {
         follow(client, root, [{rel: 'tasks', params: {size: pageSize}}]).then(
-                taskCollection => {
-                return client({
-                    method: 'GET',
-                    path: taskCollection.entity._links.profile.href,
+            taskCollection => {
+                return client.get(taskCollection.data._links.profile.href, {
                     headers: {'Accept': 'application/schema+json'}
                 }).then(schema => {
-                        this.schema = schema.entity;
-                        this.links = taskCollection.entity._links;
-                        return taskCollection;
-                    });
+                    this.schema = schema.data;
+                    this.links = taskCollection.data._links;
+                    return taskCollection;
+                });
             }
         ).then(taskCollection => {
-            return taskCollection.entity._embedded.tasks.map(task =>
-            client({
-                method: 'GET',
-                path: task._links.self.href
-            }));
+            return taskCollection.data._embedded.tasks.map(task =>
+                client.get(task._links.self.href));
         }).then(
             taskPromises => {
                 return when.all(taskPromises);
             }
-        ).done(tasks => {
-            console.log("Feteched tasks:", tasks);
+        ).then(tasks => {
+            log("Feteched tasks:", tasks);
             this.setState({
                 tasks: tasks,
                 attributes: Object.keys(this.schema.properties),
@@ -80,6 +78,13 @@ class App extends React.Component {
     }
 
     componentDidMount() {
+        log('App started');
+
+        axios.get('/api/tasks').then(
+            response => {
+                log("Test response", response);
+            }
+        );
         this.loadFromServer(this.state.pageSize);
     }
 
@@ -93,42 +98,37 @@ class App extends React.Component {
 
     onCreate(newTask) {
         follow(client, root, ['tasks']).then(taskCollection => {
-            return client({
-                method: 'POST',
-                path: taskCollection.entity._links.self.href,
-                entity: newTask,
+            return client.post(taskCollection.data._links.self.href, {
+                data: newTask,
                 headers: {'Content-Type': 'application/json'}
             });
         }).then(response => {
             return follow(client, root, [
                 {rel: 'tasks', params: {'size': this.state.pageSize}}]);
-        }).done(response => {
-            this.onNavigate(response.entity._links.last.href);
+        }).then(response => {
+            this.onNavigate(response.data._links.last.href);
         });
     }
 
     onDelete(task) {
-        client({method: 'DELETE', path: task.entity._links.self.href}).done(response => {
+        client.delete(task.data._links.self.href).then(response => {
             this.loadFromServer(this.state.pageSize);
         });
     }
 
     onNavigate(navUri) {
-        client({method: 'GET', path: navUri}).then(
+        client.get(navUri).then(
             taskCollection => {
-                this.links = taskCollection.entity._links;
+                this.links = taskCollection.data._links;
 
-                return taskCollection.entity._embedded.tasks.map( task =>
-                client({
-                    method: 'GET',
-                    path: task._links.self.href
-                }));
+                return taskCollection.data._embedded.tasks.map(task =>
+                    client.get(task._links.self.href));
             }
         ).then(
             taskPromises => {
                 return when.all(taskPromises);
             }
-        ).done( tasks => {
+        ).then(tasks => {
             this.setState({
                 tasks: tasks,
                 attributes: Object.keys(this.schema.properties),
@@ -167,7 +167,7 @@ class App extends React.Component {
                                   attributes={this.state.attributes}
                                   onNavigate={this.onNavigate}
                                   onDelete={this.onDelete}
-                                  updatePageSize={this.updatePageSize} />
+                                  updatePageSize={this.updatePageSize}/>
                     </Row>
                 </Grid>
             </div>
@@ -200,9 +200,9 @@ class CreateDialog extends React.Component {
     render() {
         console.log(this.props.attributes);
         var inputs = this.props.attributes.map(attribute =>
-                <p key={attribute}>
-                    <input type="text" placeholder={attribute} ref={attribute} className="field"/>
-                </p>
+            <p key={attribute}>
+                <input type="text" placeholder={attribute} ref={attribute} className="field"/>
+            </p>
         );
 
         return (
@@ -239,7 +239,7 @@ class TaskList extends React.Component {
     handleInput(e) {
         e.preventDefault();
         var pageSize = ReactDOM.findDOMNode(this.refs.pageSize).value;
-        if(/^[0-9]+$/.test(pageSize)){
+        if (/^[0-9]+$/.test(pageSize)) {
             this.props.updatePageSize(pageSize);
         } else {
             ReactDOM.findDOMNode(this.refs.pageSize).value =
@@ -269,7 +269,8 @@ class TaskList extends React.Component {
 
     render() {
         var tasks = this.props.tasks.map(task =>
-                <Task key={task.entity._links.self.href} task={task} attributes={this.props.attributes} onDelete={this.props.onDelete}/>
+            <Task key={task.data._links.self.href} task={task} attributes={this.props.attributes}
+                  onDelete={this.props.onDelete}/>
         );
 
         var navLinks = [];
@@ -315,17 +316,17 @@ class Task extends React.Component {
         this.handleDelete = this.handleDelete.bind(this);
     }
 
-    handleDelete(){
+    handleDelete() {
         this.props.onDelete(this.props.task);
     }
 
     render() {
         return (
             <tr>
-                <td>{this.props.task.entity.chainFilePath}</td>
-                <td>{this.props.task.entity.fileToProcessPath}</td>
-                <td>{this.props.task.entity.description}</td>
-                <td>{this.props.task.entity.status}</td>
+                <td>{this.props.task.data.chainFilePath}</td>
+                <td>{this.props.task.data.fileToProcessPath}</td>
+                <td>{this.props.task.data.description}</td>
+                <td>{this.props.task.data.status}</td>
                 <td><Button onClick={this.handleDelete}>stop</Button></td>
             </tr>
         );
