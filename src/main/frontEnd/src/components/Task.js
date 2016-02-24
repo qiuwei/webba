@@ -1,10 +1,9 @@
 'use strict';
 import {Navbar, Nav, NavItem, Col, Row, Grid, Table, Button} from 'react-bootstrap';
-import {PropTypes} from 'react';
+import React, {PropTypes} from 'react';
 
 const Task = ({id, chain, file, description, status, onStop, onDelete}) => (
     <tr>
-        <td>{id}</td>
         <td>{chain}</td>
         <td>{file}</td>
         <td>{description}</td>
@@ -15,13 +14,13 @@ const Task = ({id, chain, file, description, status, onStop, onDelete}) => (
         }}>Stop</Button>
             <Button onClick={e => {
             e.preventDefault();
-            onDelete;
-            }}> </Button></td>
+            onDelete();
+            }}>Delete</Button></td>
     </tr>
 );
 
 Task.propTypes = {
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     chain: PropTypes.string.isRequired,
     file: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,

@@ -1,7 +1,8 @@
 'use strict';
 
-import {NavBar} from 'react-bootstrap';
-import {PropTypes} from 'react';
+import {Navbar, Nav, NavItem} from 'react-bootstrap';
+import React, {PropTypes} from 'react';
+import UserInfo from './UserInfo';
 
 //This directory contains the dumb components, they only know how to render, their callbacks are also props, they don't maintain any states
 //The container directory contains the components which know how to interact with the store
@@ -13,7 +14,7 @@ const Header = ({userName, logout}) =>(
             </Navbar.Brand>
         </Navbar.Header>
         <Nav pullRight>
-            <Userinfo userName={userName}/>
+            <UserInfo userName={userName}/>
             <NavItem eventKey={1} href="#">Help</NavItem>
             <NavItem eventKey={2} href="#">About</NavItem>
             <NavItem eventKey={3} onClick={logout} href="/logout">Logout</NavItem>
@@ -23,7 +24,7 @@ const Header = ({userName, logout}) =>(
 
 //This is just the type signature of this function, cumbersome javascript!
 Header.propTypes = {
-    username: PropTypes.string.isRequired,
+    userName: PropTypes.string.isRequired,
     logout: PropTypes.func.isRequired
 };
 

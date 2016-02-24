@@ -8,26 +8,24 @@ import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import webbaReducers from './reducers/reducers';
-import App from './components/App';
+import App from './containers/App';
 import thunkMiddleware from 'redux-thunk';
-import loggerMiddleware from 'redux-logger';
+import createLogger from 'redux-logger';
 import { compose, applyMiddleware, combineReducers, createStore} from 'redux';
 import bows from 'bows';
 
 const log = bows('app');
-
-const allReducers = combineReducers({
-    tasks: webbaReducers
-});
+const logger = createLogger();
 
 const finalCreateStore = compose(
     applyMiddleware(
         thunkMiddleware,
-        loggerMiddleware
-    )
+        logger
+    ),
+    window.devToolsExtension ? window.devToolsExtension() : f=>f
 )(createStore);
 
-const store = finalCreateStore(allReducers);
+const store = finalCreateStore(webbaReducers);
 
 render(
     <Provider store={store}>

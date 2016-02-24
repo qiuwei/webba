@@ -3,7 +3,8 @@ import _ from 'lodash';
 import bows from 'bows';
 import reduxCrud from 'redux-crud';
 import cuid from 'cuid';
-import {Resource} from 'hyperagent';
+import when from 'when';
+import store from '../store/store';
 
 import actionTypes from './actionTypes';
 
@@ -17,59 +18,113 @@ const log = bows('webba-actions');
 
 const rootUrl = '/api';
 
-let actionCreators = {
-    //action to dipatch if the user log out
-        logout() {
+//sync actiona
+//action to dipatch if the user log out
+function logout() {
+    return {
+        type: actionTypes.USER_LOGOUT
+    };
+};
 
-        },
+function changePageSize(pageSize, data) {
+    return {type: actionTypes.PAGE_SIZE_CHANGE, pageSize: pageSize, data: data};
+};
 
-        fetch() {
-            return function (dispatch, getState) {
-                const action = baseActionCreators.fetchStart();
-                dispatch(action);
 
-                //get all the tasks, note that the tasks are get one by one
-                follow(client, root, [{rel: 'tasks', params: {size: pageSize}}]).then(taskCollection => {
-                    return taskCollection.entity._embedded.tasks.map(task =>
-                        client({
-                            method: 'GET',
-                            path: task._links.self.href
-                        }));
-                }).then(
-                    taskPromises => {
-                        return when.all(taskPromises);
-                    }
-                ).done(tasks => {
-                    log("Feteched tasks:", tasks);
-                    const successAction = baseActionCreators.fetchSuccess(tasks);
-                    dispatch(successAction);
-                    //todo
-                }).fail((tasks) => {
-                    log("Failed to fetch the tasks");
-                    const errorAction = baseActionCreators.fetchError(tasks);
-                });
-            };
-        },
+function changeCurrentPage(pageNumber, data) {
+    return {type: actionTypes.CURRENT_PAGE_CHANGE, pageNumber: pageNumber, data: data};
+};
 
-        create(task)
-        {
+function fetch() {
+    const fetchSchema = function (rootPromise) {
+        return rootPromise.then(response => {
+            return client.get(response.data._links.profile.href, {headers: {'Accept': 'application/schema+json'}}).then(response => response.data);
+        });
+    };
+    const fetchLinksAndPage = function (rootPromise) {
+        return rootPromise.then(response => {
+            return {links: response.data._links, page: response.data.page};
+        })
+    };
+    const fetchTasks = function (rootPromise) {
+        return rootPromise.then(response => {
+            return response.data._embedded.tasks.map(task => client.get(task._links.self.href));
+        }).then(taskPromises => {
+            return when.all(taskPromises);
+        }).then(tasks => {
+            return tasks.map(task => {
+                let data = task.data; //we use the uri as the key!
+                return _.assign(data, {id: data._links.self.href});
+            });
+        });
+    };
+    return function (dispatch, getState) {
+        const action = baseActionCreators.fetchStart();
+        dispatch(action);
+        const state = getState();
+        const pageSize = store.getPageSize(state);
+        const currentPage = store.getCurrentPage(state);
+        let additionalData = {};
+        const rootPromise = follow(client, rootUrl, [{rel: 'tasks', params: {page: currentPage, size: pageSize}}]);
+        rootPromise.then(response => {
+            log("Fetch response:", response);
+        });
+        return fetchSchema(rootPromise).then(schema => {
+            _.assign(additionalData, {schema: schema});
+            return fetchLinksAndPage(rootPromise);
+        }).then(linksAndPage => {
+            _.assign(additionalData, linksAndPage);
+            return fetchTasks(rootPromise);
+        }).then(tasks => {
+            dispatch(baseActionCreators.fetchSuccess(tasks, additionalData));
+        }).catch(err => {
+            log("Fetch tasks failed", err);
+        });
+    };
+};
 
-        }
-        ,
-
-        update(task)
-        {
-
-        }
-        ,
-
-        delete(task)
-        {
-
-        }
+function create(task) {
+    return function (dispatch) {
+        const cid = cuid();
+        task = task.merge({cid: cid});
+        const action = baseActionCreators.createStart(task);
+        dispatch(action);
     }
-    ;
+};
 
-actionCreators = _.extend(actionCreators, baseActionCreators);
+function update(task) {
+};
+
+function remove(taskId) { //taskID is the uri as well
+    client.delete(taskId)
+};
+
+function changePageSizeAsync(pageSize) {
+    return function (dispatch, getState) {
+        dispatch(changePageSize(pageSize));
+        dispatch(fetch());
+    }
+};
+
+
+function changeCurrentPageAsync(pageNumber) {
+    return function (dispatch, getState) {
+        dispatch(changeCurrentPage(pageNumber));
+        dispatch(fetch());
+    }
+};
+
+const actionCreators = _.extend(
+    {
+        logout,
+        fetch,
+        create,
+        update,
+        remove,
+        changePageSizeAsync,
+        changeCurrentPageAsync,
+    },
+    baseActionCreators
+);
 
 export default actionCreators;

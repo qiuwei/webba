@@ -3,28 +3,27 @@
 import Header from '../components/Header';
 import {logout} from '../actions/action';
 import {connect} from 'react-redux'
+import store from '../store/store'
 
-const getUserName = (state) => {
-    return state.currentUser;
-};
 
 const mapStateToProps = (state) => {
     return {
-        userName: getUserName(state)
+        userName: 'Wei Qiu'
     }
 };
 
 //will dispatch a logout action, action is create using action creator
 const mapDispatchToProps = (dispatch) => {
     return {
-        onLogout: () => {
-            dispatch(logout())
+        logout: () => {
+            log('log out!');
         }
     }
 };
 
 const HeaderContainer = connect(
-    getUserName
+    mapStateToProps,
+    mapDispatchToProps
 )(Header);
 
 export default HeaderContainer;

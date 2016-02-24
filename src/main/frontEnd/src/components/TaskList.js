@@ -17,8 +17,8 @@ const TaskList = ({tasks, onStop, onDelete}) => (
         <tbody>
         {_.map(tasks, task =>
             <Task id={task.id}
-            chain={task.chain}
-            file={task.file}
+            chain={task.chainFilePath}
+            file={task.fileToProcessPath}
             status={task.status}
             description={task.description}
             onStop={()=>onStop(task.id)}
@@ -31,9 +31,9 @@ const TaskList = ({tasks, onStop, onDelete}) => (
 
 TaskList.propTypes = {
     tasks: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        chain: PropTypes.string.isRequired,
-        file: PropTypes.string.isRequired,
+        id: PropTypes.string.isRequired,
+        chainFilePath: PropTypes.string.isRequired,
+        fileToProcessPath: PropTypes.string.isRequired,
         description: PropTypes.string.isRequired,
         status: PropTypes.string.isRequired
     })).isRequired,
